@@ -36,7 +36,7 @@ export default {
       return false;
     }
   },
-   checkAdminOrManagerPermission() {
+  checkAdminOrManagerPermission() {
     const token = Cookies.get('accessToken');
     if (!token) {
       return false; // Nếu không có token, trả về false
@@ -50,7 +50,7 @@ export default {
       console.error('Token không hợp lệ hoặc không thể giải mã:', error);
       return false;
     }
-},
+  },
 
   // Hàm đăng nhập
   login(credentials) {
@@ -178,46 +178,62 @@ export default {
       });
   },
   // hàm lấy ra danh sách user
-  getUsers(pageNumber, pageSize) {
-    return apiClient
-      .get('/User/GetAllUsers', {
-        params: {
-          pageNumber: pageNumber,
-          pageSize: pageSize,
-        },
-      })
-      .then((response) => {
-        return new UserResponse(response.data); // Trả về đối tượng UserResponse
-      })
-      .catch((error) => {
-        console.error('Có lỗi khi lấy danh sách người dùng:', error);
-        throw error;
-      });
-  },
+  
+getUsers(pageNumber, pageSize, userName = "") {
+  const params = {
+    pageNumber: pageNumber,
+    pageSize: pageSize,
+  };
 
+  // Nếu userName không rỗng, thêm vào params
+  if (userName) {
+    params.userName = userName;
+  }
+
+  return apiClient
+    .get('/User/GetAllUsers', { params })
+    .then((response) => {
+      return new UserResponse(response.data);
+    })
+    .catch((error) => {
+      console.error('Có lỗi khi lấy danh sách người dùng:', error);
+      throw error;
+    });
+},
+  // Lấy tất cả các vai trò
+  getAllRoles() {
+    return apiClient.get('/User/GetAllRole');
+  },
+  // Lấy quyền của một người dùng
+  getRolesOfUser(userId) {
+    return apiClient.get(`/User/GetRoleOfUser?idUser=${userId}`);
+  },
   //hàm lấy ra danh sách team
-  getTeams(pageNumber, pageSize) {
+  getTeams(pageNumber, pageSize, teamName = null) {
     return apiClient
       .get('/Team/GetAllTeams', {
         params: {
           pageNumber: pageNumber,
           pageSize: pageSize,
+          teamName: teamName ? teamName : undefined, // Gửi tên team nếu có
         },
       })
       .then((response) => {
-        return new TeamResponse(response.data); // Trả về đối tượng TeamResponse
+        return new TeamResponse(response.data);
       })
       .catch((error) => {
         console.error('Có lỗi khi lấy danh sách team:', error);
         throw error;
       });
   },
-  getProjects(pageNumber, pageSize) {
+  getProjects(pageNumber, pageSize, projectName = null, status = null) {
     return apiClient
       .get('/Project/GetAllProject', {
         params: {
           pageNumber: pageNumber,
           pageSize: pageSize,
+          projectName: projectName, // Thêm tham số tìm kiếm theo tên dự án
+          status: status, // Thêm tham số lọc theo trạng thái dự án
         },
       })
       .then((response) => {
@@ -483,7 +499,31 @@ export default {
   },
 
 
-  // Hàm cập nhật trạng thái isSeen của thông báo
+  // Update
+  updateUserProfile(formData) {
+    return apiClient
+      .put('/User/UpdateProfile', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          return response.data; // Trả về dữ liệu khi thành công
+        } else {
+          return Promise.reject(new Error('Cập nhật thông tin thất bại!'));
+        }
+      })
+      .catch((error) => {
+        console.error('Lỗi khi cập nhật thông tin người dùng:', error);
+        throw error;
+      });
+  },
+
+  updateRoleOfUser(userId, roles) {
+    return apiClient.put(`/User/UpdateRoleOfUser?id=${userId}`, roles);
+  },
+  
   updateIsSeenNotification(notificationId) {
     return apiClient.put(`/User/UpdateIsSeenNotification?id=${notificationId}`)
       .then(response => response)

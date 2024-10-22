@@ -3,8 +3,7 @@
     <v-toolbar-title>{{ $route.name }}</v-toolbar-title>
 
     <!-- Nút thông báo -->
-    <v-menu v-model="showNotificationMenu" :nudge-right="16" offset-y activator="#notification-activator"
-      max-width="400" min-width="300">
+    <v-menu v-model="showNotificationMenu" :nudge-right="16" offset-y activator="#notification-activator">
       <template v-slot:activator="{ on, attrs }">
         <v-btn icon  id="notification-activator" v-bind="attrs" v-on="on">
           <v-badge :content="unreadNotificationsCount" color="red" overlap>
